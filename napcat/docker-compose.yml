@@ -1,0 +1,64 @@
+networks:
+  napcat-net:
+    external: true
+services:
+  napcat_main:
+    container_name: napcat_main
+    environment:
+    - NAPCAT_UID=0
+    - NAPCAT_GID=0
+    - ACCOUNT=1432028231
+    - NAPCAT_BYPASS_DISABLE_LEVEL=1
+    image: mlikiowa/napcat-docker:latest
+    mac_address: 02:42:ac:11:00:01
+    networks:
+      napcat-net:
+        ipv4_address: 172.28.0.10
+    ports:
+    - 6099:6099
+    - 5700:5700
+    restart: always
+    volumes:
+    - ./main/config:/app/napcat/config
+    - ./main/qqdata:/app/.config/QQ
+    - /root/astrbot/data/plugin_data/astrbot_plugin_link_resolver/cache:/root/astrbot/data/plugin_data/astrbot_plugin_link_resolver/cache:rw
+  napcat_secondary:
+    container_name: napcat_secondary
+    environment:
+    - NAPCAT_UID=0
+    - NAPCAT_GID=0
+    - ACCOUNT=3750475856
+    - NAPCAT_BYPASS_DISABLE_LEVEL=1
+    image: mlikiowa/napcat-docker:latest
+    mac_address: 02:42:ac:11:00:02
+    networks:
+      napcat-net:
+        ipv4_address: 172.28.0.20
+    ports:
+    - 6098:6099
+    - 5701:5700
+    restart: always
+    volumes:
+    - ./secondary/config:/app/napcat/config
+    - ./secondary/qqdata:/app/.config/QQ
+    - /root/astrbot/data/plugin_data/astrbot_plugin_link_resolver/cache:/root/astrbot/data/plugin_data/astrbot_plugin_link_resolver/cache:rw
+  napcat_third:
+    container_name: napcat_third
+    environment:
+    - NAPCAT_UID=0
+    - NAPCAT_GID=0
+    - ACCOUNT=1825905764
+    - NAPCAT_BYPASS_DISABLE_LEVEL=1
+    image: mlikiowa/napcat-docker:latest
+    mac_address: 02:42:ac:11:00:03
+    networks:
+      napcat-net:
+        ipv4_address: 172.28.0.30
+    ports:
+    - 6097:6099
+    - 5702:5700
+    restart: always
+    volumes:
+    - ./third/config:/app/napcat/config
+    - ./third/qqdata:/app/.config/QQ
+    - /root/astrbot/data/plugin_data/astrbot_plugin_link_resolver/cache:/root/astrbot/data/plugin_data/astrbot_plugin_link_resolver/cache:rw

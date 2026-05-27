@@ -1,0 +1,7 @@
+*.pyc
+__pycache__/
+*.log
+/tmp/
+.DS_Store
+hermes/config.yaml
+.env

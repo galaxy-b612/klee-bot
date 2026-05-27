@@ -1,0 +1,73 @@
+agent:
+  busy_notice: false
+  gateway_timeout: 1800
+  hide_internal_reasoning: true
+  interrupt_notice: false
+  max_turns: 15
+  tool_use_enforcement: true
+auxiliary:
+  vision:
+    api_key: sk-9e300ec41e804ae7968bc8a1755f1895
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    model: qwen-vl-plus
+compression:
+  enabled: true
+custom_providers:
+- api_key: sk-a93111390caf43c8ad9ab648d61e0f3d
+  base_url: https://api.deepseek.com/v1
+  model: deepseek-v4-pro
+  name: deepseek-official
+display:
+  hide_reasoning: true
+  show_reasoning: false
+fallback_providers:
+- model: deepseek-v4-flash
+  provider: custom:deepseek-official
+group_sessions_per_user: false
+mcp_servers:
+  klee-tools:
+    transport: sse
+    url: http://127.0.0.1:8700/sse
+model:
+  default: deepseek-v4-flash
+  provider: custom:deepseek-official
+onboarding:
+  seen:
+    busy_input_prompt: true
+platform_toolsets:
+  api_server:
+  - web
+  - vision
+  - browser
+  - memory
+  - todo
+  - skills
+  - code_execution
+  - image_gen
+  napcat:
+  - hermes-cli
+  - hermes-napcat
+  - web
+  - memory
+  - skills
+  - todo
+  - vision
+platforms:
+  api_server:
+    extra:
+      key: hermes_klee_token
+  napcat:
+    enabled: true
+    extra:
+      access_token: notification_bot_2024
+      admins:
+      - '3750475856'
+      - '3483442935'
+      allow_from: []
+      dm_policy: open
+      group_policy: open
+      http_api: http://127.0.0.1:5701
+      self_id: '3750475856'
+      ws_port: 18800
+prefill_messages_file: /root/.hermes/search_enforcement.yaml
+suppress_thinking_output: true
