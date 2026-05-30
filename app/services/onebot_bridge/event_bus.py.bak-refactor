@@ -1,0 +1,141 @@
+"""OneBot Event Bus — routes events from upstream to downstream services.
+
+Manages multiple DownstreamOneBotWSClient instances. Broadcasts events to
+all enabled downstreams, with optional per-target routing.
+
+Phase 1 (transparent proxy): broadcast all events to all downstreams.
+Phase 2 (semi-transparent): route based on IntentRouter + ReplyGate.
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Any, Callable, Optional
+
+from app.services.onebot_bridge.downstream import DownstreamOneBotWSClient
+from app.services.onebot_bridge.types import (
+    DownstreamConfig,
+    OneBotAPIRequest,
+    OneBotAPIResponse,
+    OneBotEvent,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class OneBotEventBus:
+    """Event bus that manages downstream connections.
+
+    Usage:
+        bus = OneBotEventBus(on_api_request=proxy.handle_api)
+        await bus.add_downstream(astrbot_config)
+        await bus.add_downstream(yunzai_config)
+        await bus.broadcast(event)
+    """
+
+    def __init__(
+        self,
+        on_api_request: Callable[[OneBotAPIRequest, str], Any] | None = None,
+    ):
+        self._clients: dict[str, DownstreamOneBotWSClient] = {}
+        self._on_api_request = on_api_request
+
+    # ── Downstream management ──────────────────────────────
+
+    async def add_downstream(self, config: DownstreamConfig):
+        """Create and start a downstream WS client."""
+        if not config.enabled:
+            logger.info("Downstream[%s] disabled, skipping", config.name)
+            return
+
+        async def api_handler(req: OneBotAPIRequest):
+            if self._on_api_request:
+                await self._on_api_request(req, config.name)
+
+        client = DownstreamOneBotWSClient(
+            config=config, on_api_request=api_handler,
+        )
+        self._clients[config.name] = client
+        await client.start()
+
+    async def remove_downstream(self, name: str):
+        """Stop and remove a downstream client."""
+        client = self._clients.pop(name, None)
+        if client:
+            await client.stop()
+
+    async def stop_all(self):
+        """Stop all downstream connections."""
+        for name in list(self._clients.keys()):
+            await self.remove_downstream(name)
+
+    # ── Event routing ──────────────────────────────────────
+
+    async def broadcast(self, event: OneBotEvent) -> dict[str, bool]:
+        """Send an event to ALL connected downstreams.
+
+        Returns a dict of {name: success}.
+        """
+        results: dict[str, bool] = {}
+        for name, client in self._clients.items():
+            ok = await client.push_event(event)
+            results[name] = ok
+            if not ok:
+                logger.warning("Broadcast to %s failed", name)
+        return results
+    async def route_event(self, event: OneBotEvent) -> dict[str, bool]:
+        """Route event to downstream matching event self_id.
+        
+        Sends to downstream whose self_id matches the event's self_id.
+        Also sends to downstreams with self_id=0 (unmanaged, e.g. yunzai).
+        Falls back to broadcast if no managed downstream matches.
+        """
+        results: dict[str, bool] = {}
+        target = event.self_id
+        matched = False
+        for name, client in self._clients.items():
+            ds_sid = client.config.self_id
+            if ds_sid == 0 or ds_sid == target:
+                ok = await client.push_event(event)
+                results[name] = ok
+                if ds_sid == target:
+                    matched = True
+                if not ok:
+                    logger.warning("Route to %s failed", name)
+        if not matched:
+            for name, client in self._clients.items():
+                if name not in results:
+                    ok = await client.push_event(event)
+                    results[name] = ok
+        return results
+
+
+    async def send_to(self, target: str, event: OneBotEvent) -> bool:
+        """Send an event to a specific downstream by name."""
+        client = self._clients.get(target)
+        if client is None:
+            logger.warning("Target '%s' not found", target)
+            return False
+        return await client.push_event(event)
+
+    # ── API response routing ───────────────────────────────
+
+    async def send_response(self, source: str, response: OneBotAPIResponse) -> bool:
+        """Send an API response back to the downstream that requested it."""
+        client = self._clients.get(source)
+        if client is None:
+            return False
+        return await client.send_response(response)
+
+    # ── Properties ─────────────────────────────────────────
+
+    @property
+    def client_count(self) -> int:
+        return len(self._clients)
+
+    @property
+    def client_names(self) -> list[str]:
+        return list(self._clients.keys())
+
+    def get_client(self, name: str) -> DownstreamOneBotWSClient | None:
+        return self._clients.get(name)

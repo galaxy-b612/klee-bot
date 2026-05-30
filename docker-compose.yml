@@ -1,0 +1,35 @@
+# Klee Core — docker-compose for server deployment
+#
+# Deploy alongside existing NapCat / AstrBot / Yunzai / Hermes services.
+# Klee Core listens on port 8000 and forwards events downstream.
+
+version: "3.8"
+
+services:
+  klee-core:
+    build: .
+    container_name: klee-core
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      # If running outside Docker, use host.docker.internal to reach host services
+      # Or attach to the same Docker network as NapCat
+    environment:
+      - KLEE_CORE_CONFIG_DIR=/app/config
+      - KLEE_CORE_DATABASE_URL=sqlite+aiosqlite:///app/data/klee.db
+    networks:
+      - klee-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  klee-net:
+    name: klee-net
+    driver: bridge

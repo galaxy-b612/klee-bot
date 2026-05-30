@@ -1,0 +1,44 @@
+bots:
+- bot_id: klee_main
+  self_id: 1432028231
+  napcat_name: napcat_main
+  napcat_http_url: http://127.0.0.1:5700
+  napcat_ws_url: ws://127.0.0.1:5700
+  groups:
+  - 752538796
+  - 915443332
+  - 1085169520
+  downstream:
+    astrbot_url: http://127.0.0.1:6198
+    yunzai_url: http://127.0.0.1:2536
+    hermes_url: http://127.0.0.1:18800
+    meme_url: http://127.0.0.1:8700
+  enabled: true
+- bot_id: klee_secondary
+  self_id: 3750475856
+  napcat_name: napcat_secondary
+  napcat_http_url: http://127.0.0.1:5701
+  napcat_ws_url: ws://127.0.0.1:5701
+  groups:
+  - 29459043
+  - 1085169520
+  downstream:
+    astrbot_url: http://127.0.0.1:6198
+    yunzai_url: http://127.0.0.1:2536
+    hermes_url: http://127.0.0.1:18801
+    meme_url: http://127.0.0.1:8700
+  enabled: true
+- bot_id: klee_third
+  self_id: 1825905764
+  napcat_name: napcat_third
+  napcat_http_url: http://127.0.0.1:5702
+  napcat_ws_url: ws://127.0.0.1:5702
+  groups:
+  - 923312410
+  - 1085169520
+  downstream:
+    astrbot_url: http://127.0.0.1:6198
+    yunzai_url: http://127.0.0.1:2536
+    hermes_url: http://127.0.0.1:18802
+    meme_url: http://127.0.0.1:8700
+  enabled: true

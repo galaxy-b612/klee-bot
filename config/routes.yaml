@@ -1,0 +1,187 @@
+# Klee Core — routing strategy & command pattern configuration
+
+routing:
+  strategy: "parallel"
+  timeout_seconds: 10
+  max_retries: 0
+  enabled_endpoints:
+    - astrbot
+    - yunzai
+    - hermes
+    - meme
+
+  # ── Passive intent detection ──
+  enable_passive_intents: true
+
+  # ── Link parser observer ──
+  enable_astrbot_observer_links: true
+  link_parser_targets:
+    - astrbot_main
+  link_parser_cooldown_seconds: 10
+
+  # ── Card parser observer ──
+  enable_astrbot_observer_cards: true
+  card_parser_targets:
+    - astrbot_main
+  card_parser_cooldown_seconds: 10
+
+  # ── Summary observer ──
+  enable_astrbot_summary_observer: true
+  summary_observer_targets:
+    - astrbot_main
+  summary_observer_groups:
+    - 29459043
+
+  # ── AstrBot repeat observer (LEGACY — default OFF) ──
+  enable_astrbot_repeat_plugin: false
+  repeat_observer_targets:
+    - astrbot_main
+  repeat_observer_groups: []
+  observer_reply_cooldown_seconds: 30
+
+  # ── Klee Core 内置复读 ──
+  klee_core_repeat:
+    enable: true
+    groups:
+      - 29459043
+      - 923312410
+      - 915443332
+    threshold: 3
+    window: 5
+    cooldown_seconds: 60
+    max_length: 80
+    min_length: 1
+    ignore_commands: true
+    ignore_links: true
+    ignore_cards: true
+    ignore_images: true
+    ignore_bot_messages: true
+
+# ── Reply Arbiter ──
+reply_arbiter:
+  fake_success_when_blocked: true
+
+  # Summary scheduled messages
+  allow_summary_scheduled_messages: true
+  trusted_summary_downstreams:
+    - astrbot_main
+  summary_message_allowed_groups:
+    - 29459043
+  summary_message_allowed_actions:
+    - send_msg
+    - send_group_msg
+    - send_forward_msg
+    - send_group_forward_msg
+  summary_message_keywords:
+    - 可莉把今天的群聊都记下来啦
+  summary_message_time_windows:
+    - start: "22:30"
+      end: "23:30"
+  allow_summary_outside_time_window: true
+
+  # ── Scheduled system task whitelist (e.g. Yunzai xiaoyao daily sign-in) ──
+  allow_scheduled_system_tasks: true
+  scheduled_system_task_downstreams:
+    - yunzai
+  scheduled_system_task_allowed_groups:
+    - 29459043
+    - 923312410
+    - 915443332
+  scheduled_system_task_allowed_actions:
+    - send_msg
+    - send_group_msg
+    - send_forward_msg
+    - send_group_forward_msg
+  scheduled_system_task_time_windows:
+    - start: "00:00"
+      end: "01:30"
+  scheduled_system_task_max_per_group_per_window: 5
+
+commands:
+  # ── P1: Yunzai # prefix ──
+  - pattern: "^#"
+    handler: "yunzai"
+  - pattern: "^ww"
+    handler: "yunzai"    
+  - pattern: "^zzz"
+    handler: "yunzai"
+  - pattern: "^*"
+    handler: "yunzai"
+  - pattern: "^%"
+    handler: "yunzai"    
+
+  # ── P2: Yunzai bq.json keywords (exact set match, loaded at startup) ──
+  - pattern: "@bq_keywords"
+    handler: "yunzai"
+
+  # ── P3: AstrBot /-prefixed commands ──
+  - pattern: "^/"
+    handler: "astrbot"
+
+  # ── P4: Yunzai non-# exact ──
+  - pattern: "^(猜语音|原神猜语)$"
+    handler: "yunzai"
+
+  # ── P5: Yunzai parameterized ──
+  - pattern: "^点歌"
+    handler: "yunzai"
+
+  # ── P6: Yunzai other ──
+  - pattern: "^(娶群友|群对象列表|活跃统计)$"
+    handler: "yunzai"
+  # Yunzai 婚姻系统
+  - pattern: "^(强娶|闹离婚|我对象呢|群对象列表)$"
+    handler: "yunzai"
+
+  # ── P7: AstrBot @bot-required ──
+  - pattern: "^爆料$"
+    handler: "astrbot"
+    require_mention: true
+  - pattern: "(刚刚|刚才|最近).*?[聊说讨论谈].*?(什么|啥|话题)"
+    handler: "astrbot"
+    require_mention: true
+  - pattern: "总结一下?(群聊|话题)?|复盘一下?"
+    handler: "astrbot"
+    require_mention: true
+  - pattern: "(给)(我|我们)?总结一下?"
+    handler: "astrbot"
+    require_mention: true
+  - pattern: "^话题(总结|是什么|是啥)$"
+    handler: "astrbot"
+    require_mention: true
+  - pattern: "(刚才|最近)?发生了?(什么|啥)"
+    handler: "astrbot"
+    require_mention: true
+  - pattern: "群里.*?[聊说讨论].*?(什么|啥)"
+    handler: "astrbot"
+    require_mention: true
+
+  # ── P8: AstrBot stickers (no @ required) ──
+  - pattern: "来个(doro|柴郡|咖波|艾露猫|三小只|吉咿卡哇|菲比|菲比啾比)"
+    handler: "astrbot"
+  - pattern: "菲比啾比"
+    handler: "astrbot"
+
+  # ── P9: AstrBot games/utility ──
+  - pattern: "来局海龟汤"
+    handler: "astrbot"
+  - pattern: "^今日小猪$"
+    handler: "astrbot"
+  - pattern: "^(攻击|猛攻)$"
+    handler: "astrbot"
+  - pattern: "^(扣|鹿|🦌)$"
+    handler: "astrbot"
+  - pattern: "^吃什么"
+    handler: "astrbot"
+  - pattern: "^画像$"
+    handler: "astrbot"
+
+  # ── P10: Klee Core ──
+  - pattern: "^查询好感$"
+    handler: "klee_core"
+  - pattern: "(群员好感度排行|好感排行)"
+    handler: "klee_core"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"

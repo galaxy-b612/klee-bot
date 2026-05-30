@@ -1,0 +1,28 @@
+downstreams:
+  astrbot_main:
+    type: onebot_reverse_ws
+    url: ws://127.0.0.1:6199/ws
+    access_token: '1234567'
+    self_id: 1432028231
+    enabled: true
+  astrbot_secondary:
+    type: onebot_reverse_ws
+    url: ws://127.0.0.1:6199/ws
+    access_token: '1234567'
+    self_id: 3750475856
+    enabled: true
+  astrbot_third:
+    type: onebot_reverse_ws
+    url: ws://127.0.0.1:6199/ws
+    access_token: '1234567'
+    self_id: 1825905764
+    enabled: true
+  yunzai:
+    type: onebot_reverse_ws
+    url: ws://127.0.0.1:2536/OneBotv11
+    access_token: ''
+    enabled: true
+  hermes:
+    type: http
+    url: http://127.0.0.1:18800/chat
+    enabled: false
